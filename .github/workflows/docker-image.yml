@@ -1,0 +1,28 @@
+name: Build Component
+
+on:
+  push:
+    branches: [ main ]
+  workflow_run:
+    workflows: [ "Test Component" ]
+    branches: [ main ]
+    types:
+      - completed
+
+jobs:
+  build-python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: actions/checkout@v4
+      - name: Build and push Python components
+        run: bash -c ./service_config/build_python_image.sh
+          #      - name: Init update
+          #        uses: WSE-research/docker-service-updater@v0.2.1
+          #        with:
+          #          api_key: ${{ secrets.API_KEY }}
+          #          updater_host: ${{ secrets.UPDATER_HOST }}
