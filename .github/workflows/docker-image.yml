@@ -2,16 +2,14 @@ name: Build Component
 
 on:
   push:
-    branches: [ main ]
-  workflow_run:
-    workflows: [ "Test Component" ]
-    branches: [ main ]
-    types:
-      - completed
+    branches: [main]
 
 jobs:
+  test-python:
+    uses: .github/workflows/run-tests.yml@main
   build-python:
     runs-on: ubuntu-latest
+    needs: [test-python]
     steps:
       - name: Docker Login
         uses: docker/login-action@v3
