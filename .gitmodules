@@ -1,0 +1,3 @@
+[submodule "KGQAn"]
+	path = KGQAn
+	url = https://github.com/WSE-research/KGQAn
