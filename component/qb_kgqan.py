@@ -13,9 +13,34 @@ qb_kgqan_bp = Blueprint("qb_kgqan_bp", __name__, template_folder="templates")
 SERVICE_NAME_COMPONENT = os.environ["SERVICE_NAME_COMPONENT"]
 KGQAN_ENDPOINT = os.environ["KGQAN_ENDPOINT"]
 KGQAN_KNOWLEDGEGRAPH = os.environ["KGQAN_KNOWLEDGEGRAPH"]
-KGQAN_MAX_ANSWERS = os.environ["KGQAN_MAX_ANSWERS"]
+KGQAN_MAX_ANSWERS = int(os.environ["KGQAN_MAX_ANSWERS"])
 
 
+# TODO: define request params
+@qb_kgqan_bp.route("/ask_raw", methods=["GET"])
+def ask_raw():
+    args = request.args
+    result_json = call_kgqan_endpoint(
+        question_text=args["question_text"],
+        knowledge_graph=args["knowledge_graph"],
+        max_answers=int(args["max_answers"]),
+    )
+    return jsonify(result_json)
+
+
+@qb_kgqan_bp.route("/ask", methods=["GET"])
+def ask():
+    data = request.args
+    result_json = call_kgqan_endpoint(
+        question_text=data["question_text"],
+        knowledge_graph=data["knowledge_graph"],
+        max_answers=int(data["max_answers"]),
+    )
+    parsed_response = parse_kgqan_response(result_json)
+    return jsonify(parsed_response)
+
+
+# default Qanary component endpoint
 @qb_kgqan_bp.route("/annotatequestion", methods=["POST"])
 def qanary_service():
     """the POST endpoint required for a Qanary service"""
@@ -34,7 +59,9 @@ def qanary_service():
 
 
     ## MAIN FUNCTIONALITY
-    candidate_list = call_kgqan_endpoint(question_text=question_text)
+    # call with default values
+    response_json = call_kgqan_endpoint(question_text=question_text)
+    candidate_list = parse_kgqan_response(response_json)
 
     # create sparql insert queries 
     for candidate in candidate_list:
@@ -105,23 +132,7 @@ def qanary_service():
     return jsonify(request.get_json())
 
 
-def call_kgqan_endpoint(question_text: str):
-    json = {
-        'question': question_text,
-        'knowledge_graph': KGQAN_KNOWLEDGEGRAPH,
-        'max_answers': int(KGQAN_MAX_ANSWERS)
-    }
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    response = requests.request("POST", KGQAN_ENDPOINT, json=json, headers=headers)
-
-    if response.status_code != 200:
-        raise RuntimeError(f"Could not fetch answer from KGQAn server: {response.status_code}:\n{response.text}")
-
-    response_json = response.json()
-    logging.debug(f"got response json: {response_json}")
-
+def parse_kgqan_response(response_json: dict):
     candidate_list = []
     results = response_json#[0]
     for index, result in enumerate(results):
@@ -135,6 +146,26 @@ def call_kgqan_endpoint(question_text: str):
         candidate_list.append(candidate)
 
     return candidate_list
+
+
+def call_kgqan_endpoint(question_text: str, knowledge_graph: str = KGQAN_KNOWLEDGEGRAPH, max_answers: int = KGQAN_MAX_ANSWERS):
+    json = {
+        'question': question_text,
+        'knowledge_graph': knowledge_graph,
+        'max_answers': max_answers
+    }
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", KGQAN_ENDPOINT, json=json, headers=headers)
+
+    if response.status_code != 200:
+        raise RuntimeError(f"Could not fetch answer from KGQAn server: {response.status_code}:\n{response.text}")
+
+    response_json = response.json()
+    logging.debug(f"got response json: {response_json}")
+
+    return response_json
 
 
 def clean_sparql_for_insert_query(sparql: str):
