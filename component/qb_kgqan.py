@@ -17,7 +17,7 @@ KGQAN_MAX_ANSWERS = int(os.environ["KGQAN_MAX_ANSWERS"])
 
 
 # TODO: define request params
-@qb_kgqan_bp.route("/ask_raw", methods=["GET"])
+@qb_kgqan_bp.route("/answer_raw", methods=["GET"])
 def ask_raw():
     args = request.args
     result_json = call_kgqan_endpoint(
@@ -28,7 +28,7 @@ def ask_raw():
     return jsonify(result_json)
 
 
-@qb_kgqan_bp.route("/ask", methods=["GET"])
+@qb_kgqan_bp.route("/answer", methods=["GET"])
 def ask():
     data = request.args
     result_json = call_kgqan_endpoint(
