@@ -15,30 +15,39 @@ services:
 # from submodule? KGQAn services
   word_embedding_server:
     image: kgqan_word_embedding:local
+    #image: ozxx33/kgqan_word_embedding
     build:
       context: ./KGQAn/word_embedding
     ports:
       - '9600:9600'
     volumes:
-      - ./data:/app/data
+      - ./KGQAn/data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
     network_mode: host
 
   kgqan_server:
     image: kgqan_server:local
+    #image: ozxx33/kgqan_server
     build:
       context: ./KGQAn/src
       dockerfile: Dockerfile.server
     ports:
       - '8899:8899'
     volumes:
-      - ./data/output_pred21_8_30:/app/model
-      - ./src:/app
+      - ./KGQAn/data/output_pred21_8_30:/app/kgqan/model
+      - ./KGQAn/src:/app
     environment:
       - WORD_EMBEDDING_HOST=localhost
       - WORD_EMBEDDING_PORT=9600
+      - WORD_EMBEDDING_CONNECTION_MAX_ATTEMPTS=10
+      - WORD_EMBEDDING_CONNECTION_WAIT_INTERVAL=30
       - PYTHONUNBUFFERED=1 # visible logging in docker 
+        # knowledge graphs
+      - 'KNOWLEDGE_GRAPH_NAMES=["dbpedia", "wikidata"]'
+      - DBPEDIA_URI=https://dbpedia.org/sparql
+        #- WIKIDATA_URI=https://query.wikidata.org/sparql
+      - WIKIDATA_URI=https://wikidata.demo.openlinksw.com/sparql
     depends_on:
       - word_embedding_server
     network_mode: host
