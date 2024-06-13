@@ -1,8 +1,6 @@
-Flask==3.0.3
-flask_swagger_ui==4.11.1
+fastapi==0.111.0
 qanary_helpers==0.2.2
 Requests==2.32.3
 setuptools==69.0.3
-python-dotenv
 pytest
 pytest-env

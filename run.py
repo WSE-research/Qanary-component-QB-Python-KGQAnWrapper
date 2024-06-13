@@ -49,5 +49,3 @@ if __name__ == "__main__":
     # start the web service
     if SERVICE_PORT == None:
         raise RuntimeError("SERVICE_PORT must not be empty!")
-    else:
-        app.run(debug=True, port=SERVICE_PORT)

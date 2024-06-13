@@ -2,13 +2,14 @@ import requests
 import re
 import logging
 import os
-from flask import Blueprint, jsonify, request
 from qanary_helpers.qanary_queries import get_text_question_in_graph, insert_into_triplestore
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 
 
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
 
-qb_kgqan_bp = Blueprint("qb_kgqan_bp", __name__, template_folder="templates")
+router = APIRouter()
 
 SERVICE_NAME_COMPONENT = os.environ["SERVICE_NAME_COMPONENT"]
 KGQAN_ENDPOINT = os.environ["KGQAN_ENDPOINT"]
@@ -16,33 +17,29 @@ KGQAN_KNOWLEDGEGRAPH = os.environ["KGQAN_KNOWLEDGEGRAPH"]
 KGQAN_MAX_ANSWERS = int(os.environ["KGQAN_MAX_ANSWERS"])
 
 
-# TODO: define request params
-@qb_kgqan_bp.route("/answer_raw", methods=["GET"])
-def ask_raw():
-    args = request.args
+@router.get("/answer_raw", description="Get unprocessed answer json from KGQAn", tags=["KGQAn"])
+async def answer_raw(question_text: str, knowledge_graph: str, max_answers: int):
     result_json = call_kgqan_endpoint(
-        question_text=args["question_text"],
-        knowledge_graph=args["knowledge_graph"],
-        max_answers=int(args["max_answers"]),
+        question_text=question_text,
+        knowledge_graph=knowledge_graph,
+        max_answers=max_answers
     )
-    return jsonify(result_json)
+    return JSONResponse(content=result_json)
 
 
-@qb_kgqan_bp.route("/answer", methods=["GET"])
-def ask():
-    data = request.args
+@router.get("/answer", description="Get processed answer json from KGQAn", tags=["KGQAn"])
+async def answer(question_text: str, knowledge_graph: str, max_answers: int):
     result_json = call_kgqan_endpoint(
-        question_text=data["question_text"],
-        knowledge_graph=data["knowledge_graph"],
-        max_answers=int(data["max_answers"]),
+        question_text=question_text,
+        knowledge_graph=knowledge_graph,
+        max_answers=max_answers
     )
     parsed_response = parse_kgqan_response(result_json)
-    return jsonify(parsed_response)
+    return JSONResponse(content=parsed_response)
 
 
-# default Qanary component endpoint
-@qb_kgqan_bp.route("/annotatequestion", methods=["POST"])
-def qanary_service():
+@router.post("/annotatequestion", description="Standard process method for Qanary components", tags=["Qanary"])
+async def qanary_service(request: Request):
     """the POST endpoint required for a Qanary service"""
 
     triplestore_endpoint = request.json["values"]["urn:qanary#endpoint"]
@@ -56,13 +53,10 @@ def qanary_service():
     question_uri = get_text_question_in_graph(triplestore_endpoint=triplestore_endpoint,
                                               graph=triplestore_ingraph)[0]["uri"]
     logging.info(f"Question text: {question_text}")
-
-
     ## MAIN FUNCTIONALITY
     # call with default values
     response_json = call_kgqan_endpoint(question_text=question_text)
     candidate_list = parse_kgqan_response(response_json)
-
     # create sparql insert queries 
     for candidate in candidate_list:
         # query candidate
@@ -129,12 +123,14 @@ def qanary_service():
 #            component_name = SERVICE_NAME_COMPONENT
 #        )
 
-    return jsonify(request.get_json())
+    return JSONResponse(request.json())
 
 
 def parse_kgqan_response(response_json: dict):
+    """Extract required information for Annotations to the triplestore"""
+
     candidate_list = []
-    results = response_json#[0]
+    results = response_json
     for index, result in enumerate(results):
         logging.debug(f"candidate #{index}: {result}")
         candidate = {
@@ -144,11 +140,12 @@ def parse_kgqan_response(response_json: dict):
             'index': index
         }
         candidate_list.append(candidate)
-
     return candidate_list
 
 
 def call_kgqan_endpoint(question_text: str, knowledge_graph: str = KGQAN_KNOWLEDGEGRAPH, max_answers: int = KGQAN_MAX_ANSWERS):
+    """Post the text question to the KGQAn service"""
+
     json = {
         'question': question_text,
         'knowledge_graph': knowledge_graph,
@@ -158,39 +155,16 @@ def call_kgqan_endpoint(question_text: str, knowledge_graph: str = KGQAN_KNOWLED
         'Content-Type': 'application/json'
     }
     response = requests.request("POST", KGQAN_ENDPOINT, json=json, headers=headers)
-
     if response.status_code != 200:
         raise RuntimeError(f"Could not fetch answer from KGQAn server: {response.status_code}:\n{response.text}")
 
     response_json = response.json()
     logging.debug(f"got response json: {response_json}")
-
     return response_json
 
 
 def clean_sparql_for_insert_query(sparql: str):
+    """Remove unneeded elements of the generated SPARQL query"""
 
     cleaned_sparql = re.sub(r"OPTIONAL\W*\{(.*?)\}", "", sparql.replace("?type", ""))
-
     return cleaned_sparql
-
-#def check_connection():
-#    logging.info(f"checking connection to {KGQAN_ENDPOINT}")
-#    error = "(No error message available)" #empty error message
-#    success = "The test translation was successful"
-#    try:
-#        # TODO: test with supported language? 
-#        r, error = call_kgqan_server()
-#        assert len(r) > 0
-#        return True, success
-#    except Exception:
-#        logging.info(f"test failed with {error}")
-#        return False, error
-
-
-@qb_kgqan_bp.route("/", methods=["GET"])
-def index():
-    """examplary GET endpoint"""
-
-    logging.info("host_url: %s" % (request.host_url))
-    return "Python QB KGQAn Qanary component"

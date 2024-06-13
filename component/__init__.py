@@ -1,26 +1,31 @@
-from component.qb_kgqan import qb_kgqan_bp
-from flask import Flask
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+from component import qb_kgqan
 
-version = "0.1.3"
+version = "0.1.0"
 
-# default config file
 configfile = "app.conf"
 
-# service status information
 healthendpoint = "/health"
 
 aboutendpoint = "/about"
+app = FastAPI()
+app.include_router(qb_kgqan.router)
 
-# init Flask app and add externalized service information
-app = Flask(__name__)
-app.register_blueprint(qb_kgqan_bp)
 
-@app.route(healthendpoint, methods=["GET"])
-def health():
+@app.get("/")
+async def main():
+    return RedirectResponse("/about")
+
+
+@app.get(healthendpoint, description="Shows the status of the component")
+async def health():
     """required health endpoint for callback of Spring Boot Admin server"""
     return "alive"
 
-@app.route(aboutendpoint, methods=["GET"])
-def about():
+
+@app.get(aboutendpoint, description="Shows a description of the component")
+async def about():
     """required about endpoint for callback of Srping Boot Admin server"""
-    return "about" # TODO: replace this with a service description from configuration
+    return "Answers questions using KGQAn"# TODO: replace this with a service description from configuration
+    #return os.environ['SERVICE_DESCRIPTION_COMPONENT'] 
