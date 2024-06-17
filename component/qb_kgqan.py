@@ -42,9 +42,11 @@ async def answer(question_text: str, knowledge_graph: str, max_answers: int):
 async def qanary_service(request: Request):
     """the POST endpoint required for a Qanary service"""
 
-    triplestore_endpoint = request.json["values"]["urn:qanary#endpoint"]
-    triplestore_ingraph = request.json["values"]["urn:qanary#inGraph"]
-    triplestore_outgraph = request.json["values"]["urn:qanary#outGraph"]
+    request_json = await request.json()
+
+    triplestore_endpoint = request_json["values"]["urn:qanary#endpoint"]
+    triplestore_ingraph = request_json["values"]["urn:qanary#inGraph"]
+    triplestore_outgraph = request_json["values"]["urn:qanary#outGraph"]
     logging.info("endpoint: %s, inGraph: %s, outGraph: %s" % \
                  (triplestore_endpoint, triplestore_ingraph, triplestore_outgraph))
 
@@ -123,7 +125,7 @@ async def qanary_service(request: Request):
 #            component_name = SERVICE_NAME_COMPONENT
 #        )
 
-    return JSONResponse(request.json())
+    return JSONResponse(request_json)
 
 
 def parse_kgqan_response(response_json: dict):

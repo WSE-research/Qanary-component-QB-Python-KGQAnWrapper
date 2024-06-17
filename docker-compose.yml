@@ -6,11 +6,15 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    network_mode: host
+    hostname: qanary.component.qb.kgqan
+    ports: 
+      - '8082:8082'
     env_file:
       - .env
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface/
+    networks:
+      - qanary
 
 # from submodule? KGQAn services
   word_embedding_server:
@@ -18,13 +22,16 @@ services:
     #image: ozxx33/kgqan_word_embedding
     build:
       context: ./KGQAn/word_embedding
-    ports:
-      - '9600:9600'
+        #    exposing ports is not needed
+        #    ports:
+        #      - '9600:9600'
+    hostname: kgqan.wordembedding
+    networks:
+      - qanary
     volumes:
       - ./KGQAn/data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
-    network_mode: host
 
   kgqan_server:
     image: kgqan_server:local
@@ -32,13 +39,17 @@ services:
     build:
       context: ./KGQAn/src
       dockerfile: Dockerfile.server
-    ports:
-      - '8899:8899'
+        #     exposing ports is not required 
+        #     ports:
+        #       - '8899:8899'
+    hostname: kgqan.server
+    networks:
+      - qanary
     volumes:
       - ./KGQAn/data/output_pred21_8_30:/app/kgqan/model
       - ./KGQAn/src:/app
     environment:
-      - WORD_EMBEDDING_HOST=localhost
+      - WORD_EMBEDDING_HOST=kgqan.wordembedding
       - WORD_EMBEDDING_PORT=9600
       - WORD_EMBEDDING_CONNECTION_MAX_ATTEMPTS=10
       - WORD_EMBEDDING_CONNECTION_WAIT_INTERVAL=30
@@ -50,4 +61,11 @@ services:
       - WIKIDATA_URI=https://wikidata.demo.openlinksw.com/sparql
     depends_on:
       - word_embedding_server
-    network_mode: host
+
+
+networks:
+  qanary:
+    name: qanary
+    driver: bridge
+    external: true
+
