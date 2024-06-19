@@ -11,45 +11,9 @@ services:
       - '8082:8082'
     env_file:
       - .env
-    volumes:
-      - ~/.cache/huggingface:/root/.cache/huggingface/
-    networks:
-      - qanary
-
-# from submodule? KGQAn services
-  word_embedding_server:
-    image: kgqan_word_embedding:local
-    #image: ozxx33/kgqan_word_embedding
-    build:
-      context: ./KGQAn/word_embedding
-        #    exposing ports is not needed
-        #    ports:
-        #      - '9600:9600'
-    hostname: kgqan.wordembedding
-    networks:
-      - qanary
-    volumes:
-      - ./KGQAn/data:/app/data
+    # ENV for kgqan services
     environment:
-      - PYTHONUNBUFFERED=1
-
-  kgqan_server:
-    image: kgqan_server:local
-    #image: ozxx33/kgqan_server
-    build:
-      context: ./KGQAn/src
-      dockerfile: Dockerfile.server
-        #     exposing ports is not required 
-        #     ports:
-        #       - '8899:8899'
-    hostname: kgqan.server
-    networks:
-      - qanary
-    volumes:
-      - ./KGQAn/data/output_pred21_8_30:/app/kgqan/model
-      - ./KGQAn/src:/app
-    environment:
-      - WORD_EMBEDDING_HOST=kgqan.wordembedding
+      - WORD_EMBEDDING_HOST=qanary.component.qb.kgqan
       - WORD_EMBEDDING_PORT=9600
       - WORD_EMBEDDING_CONNECTION_MAX_ATTEMPTS=10
       - WORD_EMBEDDING_CONNECTION_WAIT_INTERVAL=30
@@ -57,11 +21,12 @@ services:
         # knowledge graphs
       - 'KNOWLEDGE_GRAPH_NAMES=["dbpedia", "wikidata"]'
       - DBPEDIA_URI=https://dbpedia.org/sparql
-        #- WIKIDATA_URI=https://query.wikidata.org/sparql
       - WIKIDATA_URI=https://wikidata.demo.openlinksw.com/sparql
-    depends_on:
-      - word_embedding_server
-
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface/
+      - ./KGQAn/data:/KGQAn/data
+    networks:
+      - qanary
 
 networks:
   qanary:
