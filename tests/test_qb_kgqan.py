@@ -5,6 +5,7 @@ import re
 from unittest import TestCase
 import pkg_resources
 import json
+from fastapi.testclient import TestClient
 
 
 class TestComponent(TestCase):
@@ -31,14 +32,13 @@ class TestComponent(TestCase):
         "Content-Type": "application/json"
     }
 
-
+    client = TestClient(app)
 
     def test_qanary_service(self):
 
-        with app.test_client() as client, \
-                patch('component.qb_kgqan.get_text_question_in_graph') as mocked_get_text_question_in_graph, \
-                patch('component.qb_kgqan.insert_into_triplestore') as mocked_insert_into_triplestore, \
-                patch('component.qb_kgqan.call_kgqan_endpoint') as mocked_call_kgqan_endpoint:
+        with patch('component.qb_kgqan.get_text_question_in_graph') as mocked_get_text_question_in_graph, \
+             patch('component.qb_kgqan.insert_into_triplestore') as mocked_insert_into_triplestore, \
+             patch('component.qb_kgqan.call_kgqan_endpoint') as mocked_call_kgqan_endpoint:
 
             # given a non-english question is present in the current graph
             mocked_get_text_question_in_graph.return_value = self.questions
@@ -47,7 +47,7 @@ class TestComponent(TestCase):
                 mocked_call_kgqan_endpoint.return_value = json.load(response)
 
             # when a call to /annotatequestion is made
-            response_json = client.post("/annotatequestion", headers = self.headers, data = self.request_data)
+            response_json = self.client.post("/annotatequestion", headers = self.headers, data = self.request_data)
 
             # then the text question is retrieved from the triplestore
             mocked_get_text_question_in_graph.assert_called_with(triplestore_endpoint=self.endpoint, graph=self.in_graph)

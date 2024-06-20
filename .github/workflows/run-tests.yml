@@ -13,7 +13,7 @@ jobs:
         uses: actions/setup-python@v4
         id: setup_python
         with: 
-          python-version: '3.12'
+          python-version: '3.10'
       - uses: actions/checkout@v4
       - name: Cache virtual environments
         uses: actions/cache@v4

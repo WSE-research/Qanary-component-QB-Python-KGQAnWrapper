@@ -7,5 +7,5 @@ echo The host is: $SERVER_HOST
 echo The Qanary pipeline URL is: $SPRING_BOOT_ADMIN_URL
 if [ -n $SERVER_PORT ]
 then
-    exec uvicorn run:app --reload --host=$SERVER_HOST --port=$SERVER_PORT
+    exec uvicorn run:app --host 0.0.0.0 --port $SERVER_PORT
 fi
