@@ -17,8 +17,8 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - uses: actions/checkout@v4
-          with:
-            submodules: true
+        with:
+          submodules: true
       - name: Build and push Python components
         run: bash -c ./service_config/build_python_image.sh
           #      - name: Init update
