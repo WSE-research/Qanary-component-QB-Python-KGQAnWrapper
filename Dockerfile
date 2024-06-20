@@ -8,7 +8,6 @@ RUN pip install gunicorn
 
 ADD KGQAn/word_embedding ./KGQAn/word_embedding
 ADD KGQAn/src ./KGQAn/src
-ADD KGQAn/docker-compose-qanary.yml ./docker-compose.yml
 
 ADD KGQAn/requirements.txt ./KGQAn/requirements.txt
 RUN pip install -r KGQAn/requirements.txt
