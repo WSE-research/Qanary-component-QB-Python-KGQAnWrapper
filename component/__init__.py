@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse, Response
 from component import qb_kgqan
 
-version = "0.1.0"
+version = "0.1.1"
 
 configfile = "app.conf"
 
@@ -11,7 +11,6 @@ healthendpoint = "/health"
 aboutendpoint = "/about"
 app = FastAPI()
 app.include_router(qb_kgqan.router)
-
 
 @app.get("/")
 async def main():
@@ -29,3 +28,4 @@ async def about():
     """required about endpoint for callback of Srping Boot Admin server"""
     return Response("Answers questions using KGQAn", media_type="text/plain") # TODO: replace this with a service description from configuration
     #return os.environ['SERVICE_DESCRIPTION_COMPONENT'] 
+

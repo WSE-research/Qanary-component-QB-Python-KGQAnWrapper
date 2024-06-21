@@ -6,7 +6,10 @@ from qanary_helpers.registrator import Registrator
 
 from component import app, healthendpoint, aboutendpoint
 
-logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
+# TODO: get logger from module
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 SPRING_BOOT_ADMIN_URL = os.getenv('SPRING_BOOT_ADMIN_URL')
 SPRING_BOOT_ADMIN_USERNAME = os.getenv('SPRING_BOOT_ADMIN_USERNAME')
@@ -33,7 +36,7 @@ registration = Registration(
     metadata=metadata
 )
 
-logging.info(f"Start registration on: {SPRING_BOOT_ADMIN_URL} with the credentials: {SPRING_BOOT_ADMIN_USERNAME}/{SPRING_BOOT_ADMIN_PASSWORD}")
+logger.info(f"Start registration on: {SPRING_BOOT_ADMIN_URL} with the credentials: {SPRING_BOOT_ADMIN_USERNAME}/{SPRING_BOOT_ADMIN_PASSWORD}")
 
 # start a thread that will contact iteratively the Spring Boot Admin server
 registrator_thread = Registrator(

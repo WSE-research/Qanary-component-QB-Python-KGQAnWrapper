@@ -6,8 +6,14 @@ from qanary_helpers.qanary_queries import get_text_question_in_graph, insert_int
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+# TODO: get logger from module
+c_handler = logging.StreamHandler()
+c_handler.setLevel(logging.INFO)
+c_formatter = logging.Formatter('%(asctime)s - %(name)s - [%(levelname)s] %(message)s')
+c_handler.setFormatter(c_formatter)
 
-logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.addHandler(c_handler)
 
 router = APIRouter()
 
@@ -47,14 +53,14 @@ async def qanary_service(request: Request):
     triplestore_endpoint = request_json["values"]["urn:qanary#endpoint"]
     triplestore_ingraph = request_json["values"]["urn:qanary#inGraph"]
     triplestore_outgraph = request_json["values"]["urn:qanary#outGraph"]
-    logging.info("endpoint: %s, inGraph: %s, outGraph: %s" % \
+    logger.info("endpoint: %s, inGraph: %s, outGraph: %s" % \
                  (triplestore_endpoint, triplestore_ingraph, triplestore_outgraph))
 
     question_text = get_text_question_in_graph(triplestore_endpoint=triplestore_endpoint,
                                       graph=triplestore_ingraph)[0]["text"]
     question_uri = get_text_question_in_graph(triplestore_endpoint=triplestore_endpoint,
                                               graph=triplestore_ingraph)[0]["uri"]
-    logging.info(f"Question text: {question_text}")
+    logger.info(f"Question text: {question_text}")
     ## MAIN FUNCTIONALITY
     # call with default values
     response_json = call_kgqan_endpoint(question_text=question_text)
@@ -92,7 +98,7 @@ async def qanary_service(request: Request):
             index = candidate.get("index"),
             component_name = SERVICE_NAME_COMPONENT
         )
-        logging.debug(f"SPARQL for query candidates:\n{sparql_AnnotationOfAnswerSPARQL}")
+        logger.debug(f"SPARQL for query candidates:\n{sparql_AnnotationOfAnswerSPARQL}")
         insert_into_triplestore(triplestore_endpoint, sparql_AnnotationOfAnswerSPARQL)
 
         # TODO: answer json
@@ -132,9 +138,8 @@ def parse_kgqan_response(response_json: dict):
     """Extract required information for Annotations to the triplestore"""
 
     candidate_list = []
-    results = response_json
-    for index, result in enumerate(results):
-        logging.debug(f"candidate #{index}: {result}")
+    for index, result in enumerate(response_json):
+        logger.debug(f"candidate #{index}: {result}")
         candidate = {
             'sparql': clean_sparql_for_insert_query(result.get("sparql")),
             'values': result.get("values"),
@@ -161,7 +166,7 @@ def call_kgqan_endpoint(question_text: str, knowledge_graph: str = KGQAN_KNOWLED
         raise RuntimeError(f"Could not fetch answer from KGQAn server: {response.status_code}:\n{response.text}")
 
     response_json = response.json()
-    logging.debug(f"got response json: {response_json}")
+    logger.debug(f"got response json: {response_json}")
     return response_json
 
 
