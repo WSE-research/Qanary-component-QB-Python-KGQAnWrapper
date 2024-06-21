@@ -12,25 +12,6 @@ services:
     env_file:
       - .env
     # ENV for kgqan services
-    environment:
-      - WORD_EMBEDDING_HOST=qanary.component.qb.kgqan
-      - WORD_EMBEDDING_PORT=9600
-      - WORD_EMBEDDING_CONNECTION_MAX_ATTEMPTS=10
-      - WORD_EMBEDDING_CONNECTION_WAIT_INTERVAL=30
-      - PYTHONUNBUFFERED=1 # visible logging in docker 
-        # knowledge graphs
-      - 'KNOWLEDGE_GRAPH_NAMES=["dbpedia", "wikidata"]'
-      - DBPEDIA_URI=https://dbpedia.org/sparql
-      - WIKIDATA_URI=https://wikidata.demo.openlinksw.com/sparql
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface/
       - ./KGQAn/data:/KGQAn/data
-    networks:
-      - qanary
-
-networks:
-  qanary:
-    name: qanary
-    driver: bridge
-    external: true
-
