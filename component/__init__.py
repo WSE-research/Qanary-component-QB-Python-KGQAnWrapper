@@ -9,7 +9,7 @@ configfile = "app.conf"
 healthendpoint = "/health"
 
 aboutendpoint = "/about"
-app = FastAPI()
+app = FastAPI(docs_url="/swagger-ui.html")
 app.include_router(qb_kgqan.router)
 
 @app.get("/")
