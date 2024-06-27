@@ -71,6 +71,9 @@ cd KGQAn/
 python word_embedding/server.py &
 
 # start kgqan_server
+echo "Waiting 300 sec for word_embedding_server to load model"
+sleep 300 && echo "Done waiting"
+
 cd src
 ./run.sh server &
 
