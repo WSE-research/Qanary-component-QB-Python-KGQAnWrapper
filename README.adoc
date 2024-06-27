@@ -1,0 +1,184 @@
+= QB KGQAn Wrapper Component
+
+== Overview
+
+This component builds answer queries using our own 
+https://github.com/WSE-research/KGQAn/tree/a05e4687e93e77c1bc228ef2561d7455fed8b3d3[fork] 
+of the original https://github.com/CoDS-GCS/KGQAn[KGQAn] repository.
+We opted to use our own forked repository, because we saw some changes to the base implementation 
+as necessary in order to better integrate it into the Qanary ecosystem. 
+These changes do not affect the core functionality of the original implementation. 
+
+Two prebuilt Docker images are available on Docker Hub:
+* https://hub.docker.com/r/qanary/qanary-component-qb-python-kgqanwrapper-dbpedia[qanary/qanary-component-qb-python-kgqanwrapper-dbpedia] with preconfigured environment variables: 
+** `+KGQAN_KNOWLEDGEGRAPH=dbpedia+`
+** `+KNOWLEDGE_GRAPH_NAMES=["dbpedia"]+`
+** `+DBPEDIA_URI=https://dbpedia.org/sparql+`
+* https://hub.docker.com/r/qanary/qanary-component-qb-python-kgqanwrapper-wikidata[qanary/qanary-component-qb-python-kgqanwrapper-wikidata] with preconfigured environment variables:
+** `+KGQAN_KNOWLEDGEGRAPH=wikidata+`
+** `+KNOWLEDGE_GRAPH_NAMES=["wikidata"]+`
+** `+WIKIDATA_URI=https://wikidata.demo.openlinksw.com/sparql+`
+
+We provide these preconfigured images because when used within the Qanary pipeline,
+_only one_ knowledge graph can be supported.
+
+However, by building and running the component with the included `+docker-compose.yml+` file, 
+you can specify custom knowledge graphs, as long as they use Virtuoso endpoints 
+(as some KGQAn functionality relies on Virtuoso-specific features).
+
+=== Standalone Usage
+
+This component can also be used outside of the context of a Qanary pipeilne. 
+In this case, all knowledge graph endpoints that were configured (see <<parameters>>) can be used. 
+For this use case the component provides two GET endpoints: 
+
+* `+/answer+` -- returns a JSON response containing only that data that the component needs to 
+build its SPARQL INSERT queries (sparql, values, confidence, index)
+* `+/answer_raw+` -- returns the answer JSON directly as it was computed by KGQAn
+
+Both require the following parameters:
+* `+question_text+` -- e.g. "Who founded Intel?"
+* `+knowledge_graph+` -- e.g. "dbpedia"
+* `+max_answers+` -- e.g. 3
+
+== Input Specification
+
+Not applicable as the textual question is a default parameter.
+
+== Output Specification
+
+[source, sparql]
+----
+@prefix dbr: <http://dbpedia.org/resource/> .
+@prefix oa: <http://www.w3.org/ns/openannotation/core/> .
+@prefix qa: <http://www.wdaqua.eu/qa#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:qanary:output> a qa:AnnotationOfAnswerSPARQL ;
+        oa:hasTarget <urn:myQanaryQuestion>; 
+        oa:hasBody "sparql query" ;
+        qa:score "1.0"^^xsd:float ;
+        qa:index "0"^^xsd:integer ;
+        oa:annotatedAt "2001-10-26T21:32:52"^^xsd:dateTime ;
+        oa:annotatedBy <urn:qanary:applicationName> 
+----
+
+The created SPARQL query can then be used by QE components like https://github.com/WDAqua/Qanary-question-answering-components/tree/master/qanary-component-QE-SparqlExecuter[QE-SparqlExecuter] 
+to retrieve an answer from a knowledge graph. 
+
+== Usage
+
+This component is intended to be used with Docker. 
+It relies on two additional services that are part of KGQAn: A word embedding server and 
+the actual KGQAn server that will attempt to generate an answer query. These two services are part
+of the proviced Qanary component image and will be started automatically inside the container. 
+
+1. Clone the Git repository for this component, and switch into the component's directory:
+
+[source, bash]
+----
+git --recurse-submodules clone https://github.com/WSE-research/Qanary-component-QB-Python-KGQAnWrapper.git
+
+cd Qanary-component-QB-Python-KGQAnWrapper
+----
+
+*Note*: This component is also available as a submodule as part of the 
+https://github.com/WDAqua/Qanary-question-answering-components[Qanary question answering components] repository.
+
+2. Build the docker image locally:
+
+[source, bash]
+----
+docker compose build
+----
+
+3. Set the environment variables in a `+.env+` file: 
+
+Minimal example, assuming a Qanary pipeline instance deployed on the same local network:
+[source, bash]
+----
+SPRING_BOOT_ADMIN_URL=http://localhost:8080
+SERVER_HOST=localhost
+SERVER_PORT=8082
+SPRING_BOOT_ADMIN_USERNAME=admin
+SPRING_BOOT_ADMIN_PASSWORD=admin
+SERVICE_NAME_COMPONENT=QB-KGQAn
+SERVICE_DESCRIPTION_COMPONENT="Answers questions using KGQAn"
+KGQAN_KNOWLEDGEGRAPH=dbpedia
+KNOWLEDGE_GRAPH_NAMES=["dbpedia", "wikidata"]
+DBPEDIA_URI=https://dbpedia.org/sparql
+WIKIDATA_URI=https://wikidata.demo.openlinksw.com/sparql
+----
+
+Description of all available parameters: [[parameters]]
+
+_Required Qanary component parameters_: 
+* `+SPRING_BOOT_ADMIN_URL+` -- URL of the Qanary pipeline (see Step 1 and Step 2 of the https://github.com/WDAqua/Qanary/wiki/Qanary-tutorial:-How-to-build-a-trivial-Question-Answering-pipeline[tutorial])
+* `+SPRING_BOOT_ADMIN_USERNAME+` -- the admin username of the Qanary pipeline
+* `+SPRING_BOOT_ADMIN_PASSWORD+` -- the admin password of the Qanary pipeline
+* `+SERVER_HOST+` -- the host of your Qanary component without protocol prefix (e.g. `+http://+`) (has to be visible to the Qanary pipeline, so that a callback from the pipeline can be executed)
+* `+SERVER_PORT+` -- the port of yor Qanary component (also has to be visible to the pipeline)
+* `+SERVICE_NAME_COMPONENT+` -- the name of your Qanary component (for better identification)
+* `+SERVICE_DESCRIPTION_COMPONENT+` -- the description of your Qanary component
+
+_Parameters specific to this component_:
+* `+KGQAN_KNOWLEDGEGRAPH+` -- (required) the knowledge graph that KGQAn will use to generate possible answer queries (e.g. `+dbpedia+`)
+* `+KGQAN_ENDPOINT+` -- (optional) the address that the component will use to reach the KGQAn server. Unless directly changed in the KGQAn submodule, this will be on `+http://localhost:8899+`
+* `+KGQAN_MAX_ANSWERS+` -- (optional) the maximum number of results that should be returned by the KGQAn service (default is 100)
+
+_Parameters for the internal KGQAn services_:
+* `+KNOWLEDGE_GRAPH_NAMES+` -- (required) a list of lowercase knowledge graph names (separated by ',' and no space!) that should be used to find query candidates (e.g.`+["dbpedia","wikidata"]+`)
+* `+<knowledge_graph_name>_URI+` -- (required) the specific URI for a name defined in `+KNOWLEDGE_GRAPH_NAMES+` (e.g. `+DBPEDIA_URI+`)
+* `+WORD_EMBEDDING_HOST+` -- (optional) the host, without protocol prefix, at which the KGQAn server expects the word embedding server. Unless directly changed in the KGQAn submodule this will be `+0.0.0.0+`
+* `+WORD_EMBEDDING_PORT+` -- (optional) the port at which the KGQAn server expects the word embedding server. Unless directly changed in the KGQAn submodule this will be `+9600+`
+* `+WORD_EMBEDDING_CONNECTION_MAX_ATTEMPTS+` -- (optional) maximum number of times the KGQAn server should attempt to connect to the word embedding server (default is 10)
+* `+WORD_EMBEDDING_CONNECTION_WAIT_INTERVAL+` -- (optional) waiting interval in seconds before attempting to connect to the word embedding server again (default is 30)
+* `+PYTHONUNBUFFERED+` -- (optional) set to `+1+` to enable Python logging output in Docker 
+
+4. Run the component:
+[source, bash]
+----
+docker compose up 
+----
+
+After starting the component, the container will first check if the required data (models) 
+for KGQAn are already present. If the `+./KGQAn/data/+` directory does not contain the expected 
+files, then the data is downloaded first, before any services or the component are started. 
+
+After the required models are collected, the two KGQAn services are started, followed by the 
+actual component. From here, these 3 services will run in parallel. It will take a few mintues 
+for both KGQAn servers to be fully online: 
+
+This logging output means that the word embedding server is up: 
+....
+INFO:__main__:listening on 0.0.0.0:9600
+....
+
+After initialization, the KGQAn server will start to check its connection to the word embedding 
+server: 
+....
+INFO - Checking connection to word embedding server ...
+INFO - Waiting 30 seconds for the word embedding server to respond.
+INFO - Word embedding server responding.
+....
+This logging output means that the KGQAn server is up: 
+....
+INFO - Server started http://0.0.0.0:8899
+....
+
+You can now use the component as part of a Qanary question answering pipeline. 
+
+A Swagger UI will be available at `+/swagger-ui.html+` after starting the component.
+
+== How To Test This Component
+
+This component uses https://docs.pytest.org/[pytest]. 
+The necessary environment variables have to be configured in `pytest.ini`. 
+Only the basic _component_ functionality wil be tested. Testing of the KGQAn services is part of 
+the submodule (external repository).
+
+*Note*: The use of a virtual environment is encouraged for this. 
+
+First, install the requirements with `pip install -r requirements.txt`. 
+Then you can run the local tests with the command `pytest`.

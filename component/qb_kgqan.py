@@ -17,13 +17,14 @@ logger.addHandler(c_handler)
 
 router = APIRouter()
 
+KNOWLEDGE_GRAPH_NAMES = os.environ["KNOWLEDGE_GRAPH_NAMES"]
 SERVICE_NAME_COMPONENT = os.environ["SERVICE_NAME_COMPONENT"]
-KGQAN_ENDPOINT = os.environ["KGQAN_ENDPOINT"]
 KGQAN_KNOWLEDGEGRAPH = os.environ["KGQAN_KNOWLEDGEGRAPH"]
-KGQAN_MAX_ANSWERS = int(os.environ["KGQAN_MAX_ANSWERS"])
+KGQAN_ENDPOINT = os.getenv("KGQAN_ENDPOINT", "http://localhost:8899")
+KGQAN_MAX_ANSWERS = int(os.getenv("KGQAN_MAX_ANSWERS", 100))
 
 
-@router.get("/answer_raw", description="Get unprocessed answer json from KGQAn", tags=["KGQAn"])
+@router.get("/answer_raw", description="Get unprocessed answer json from KGQAn. Available knowledge graphs: "+KNOWLEDGE_GRAPH_NAMES, tags=["KGQAn"])
 async def answer_raw(question_text: str, knowledge_graph: str, max_answers: int):
     result_json = call_kgqan_endpoint(
         question_text=question_text,
@@ -33,7 +34,7 @@ async def answer_raw(question_text: str, knowledge_graph: str, max_answers: int)
     return JSONResponse(content=result_json)
 
 
-@router.get("/answer", description="Get processed answer json from KGQAn", tags=["KGQAn"])
+@router.get("/answer", description="Get processed answer json from KGQAn. Available knowledge graphs: "+KNOWLEDGE_GRAPH_NAMES, tags=["KGQAn"])
 async def answer(question_text: str, knowledge_graph: str, max_answers: int):
     result_json = call_kgqan_endpoint(
         question_text=question_text,
