@@ -71,12 +71,10 @@ cd KGQAn/
 python word_embedding/server.py &
 
 # start kgqan_server
-#cd src
-#./run.sh server &
+cd src
+./run.sh server &
 
-#cd ../../
-
-cd ../
+cd ../../
 
 # continue with CMD from Dockerfile
 $@
