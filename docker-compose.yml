@@ -11,3 +11,4 @@ services:
       - .env
     volumes:
       - ./KGQAn/data:/KGQAn/data
+      - ./KGQAn/src/nltk_cache:/KGQAn/src/nltk_cache

@@ -1,5 +1,5 @@
 SPRING_BOOT_ADMIN_URL=http://demos.swe.htwk-leipzig.de:40111/
 SERVER_HOST=http://demos.swe.htwk-leipzig.de
-SERVER_PORT=40176
+SERVER_PORT=40178
 SERVICE_NAME_COMPONENT=QB-KGQAn-Wikidata
 SERVICE_DESCRIPTION_COMPONENT="Answers questions using KGQAn over Wikidata"
