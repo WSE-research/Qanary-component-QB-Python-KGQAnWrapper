@@ -3,6 +3,7 @@ name: Build Component
 on:
   push:
     branches: [main]
+  workflow_call:
 
 jobs:
   test-python:
@@ -22,6 +23,7 @@ jobs:
       - name: Build and push Python components
         run: bash -c ./service_config/build_python_image.sh
   init-update:
+    runs-on: ubuntu-latest
     needs: build-python
     steps:
       - name: Init update
