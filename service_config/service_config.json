@@ -9,5 +9,8 @@
         ".env": "qb-kgqanwrapper-wikidata"
       }
     }
-  ]
+  ],
+  "ids": {
+    "0": "qanary-qanary-component-qb-python-kgqanwrapper-wikidata"
+  }
 }
