@@ -11,7 +11,7 @@ jobs:
       SPRING_BOOT_ADMIN_PASSWORD: ${{ secrets.SPRING_BOOT_ADMIN_PASSWORD }}
     steps:
       - name: Prepare deployment
-        run: bash -c ./service_config/prepare_dployment.sh
+        run: bash -c ./service_config/prepare_deployment.sh
       - uses: actions/checkout@v4
       - name: Init update
         uses: WSE-research/docker-service-updater@v0.2.1
