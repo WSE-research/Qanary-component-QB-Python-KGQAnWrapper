@@ -1,0 +1,19 @@
+name: Build Component
+
+on:
+  workflow_call:
+    
+jobs:
+  build-component:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Build and push Python components
+        run: bash -c ./service_config/build_python_image.sh

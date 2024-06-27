@@ -1,13 +1,4 @@
 {
   "services": [
-    {
-      "mode": "dockerfile",
-      "port": "40175:40175",
-      "image": "qanary/qanary-component-qb-python-kgqanwrapper-dbpedia",
-      "tag": "latest",
-      "files": {
-        ".env": "qb-kgqanwrapper"
-      }
-    }
   ]
 }

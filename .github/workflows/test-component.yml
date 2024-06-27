@@ -6,7 +6,7 @@ on:
   workflow_call:
 
 jobs:
-  test-python:
+  test-component:
     runs-on: ubuntu-latest
     steps:
       - name: Configure Python
@@ -20,5 +20,5 @@ jobs:
         with:
           key: environment-${{ runner.os }}-${{ steps.setup_python.outputs.python-version}}-${{ hashFiles('requirements.txt') }}
           path: test-env
-      - name: Test Python components
+      - name: Test Python component
         run: bash -c ./service_config/test_python_component.sh

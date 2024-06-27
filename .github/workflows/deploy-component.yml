@@ -1,0 +1,15 @@
+name: Deploy Component
+
+on:
+  workflow_call:
+
+jobs:
+  init-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init update
+        uses: WSE-research/docker-service-updater@v0.2.1
+        with:
+          api_key: ${{ secrets.API_KEY }}
+          updater_host: ${{ secrets.UPDATER_HOST }}

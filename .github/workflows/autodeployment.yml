@@ -1,0 +1,15 @@
+name: Autodeploy Component on Update
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test-component:
+    uses: ./.github/workflows/test-component.yml
+  build-component:
+    needs: test-component
+    uses: ./.github/workflows/build-component.yml
+  deploy-component:
+    needs: build-component
+    uses: ./.github/workflows/deploy-component.yml
