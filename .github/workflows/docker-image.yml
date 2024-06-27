@@ -25,11 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-python
     steps:
-      - name: Init update
       - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - uses: WSE-research/docker-service-updater@v0.2.1
+      - name: Init update
+        uses: WSE-research/docker-service-updater@v0.2.1
         with:
           api_key: ${{ secrets.API_KEY }}
           updater_host: ${{ secrets.UPDATER_HOST }}
