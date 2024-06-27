@@ -10,9 +10,7 @@ jobs:
   build-component:
     needs: test-component
     uses: ./.github/workflows/build-component.yml
-    with:
-      username: ${{ secrets.DOCKER_USER }}
-      password: ${{ secrets.DOCKER_PASSWORD }}  
+    secrets: inherit
   deploy-component:
     needs: build-component
     uses: ./.github/workflows/deploy-component.yml
