@@ -3,8 +3,7 @@ name: Build Component
 on:
   push:
     branches: [main]
-  workflow_call:
-
+    
 jobs:
   test-python:
     uses: ./.github/workflows/run-tests.yml
