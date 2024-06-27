@@ -14,3 +14,4 @@ jobs:
   deploy-component:
     needs: build-component
     uses: ./.github/workflows/deploy-component.yml
+    secrets: inherit
