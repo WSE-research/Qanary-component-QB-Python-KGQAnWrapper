@@ -6,7 +6,12 @@ on:
 jobs:
   init-update:
     runs-on: ubuntu-latest
+    env:
+      SPRING_BOOT_ADMIN_USER: ${{ secrets.SPRING_BOOT_ADMIN_USER }}
+      SPRING_BOOT_ADMIN_PASSWORD: ${{ secrets.SPRING_BOOT_ADMIN_PASSWORD }}
     steps:
+      - name: Prepare deployment
+        run: bash -c ./service_config/prepare_dployment.sh
       - uses: actions/checkout@v4
       - name: Init update
         uses: WSE-research/docker-service-updater@v0.2.1
