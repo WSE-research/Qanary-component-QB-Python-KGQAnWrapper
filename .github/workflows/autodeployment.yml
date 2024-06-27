@@ -7,12 +7,11 @@ on:
 jobs:
   test-component:
     uses: ./.github/workflows/test-component.yml
-      #  build-component:
-      #    needs: test-component
-      #    uses: ./.github/workflows/build-component.yml
-      #    secrets: inherit
-  deploy-component:
-    #    needs: build-component
+  build-component:
     needs: test-component
+    uses: ./.github/workflows/build-component.yml
+    secrets: inherit
+  deploy-component:
+    needs: build-component
     uses: ./.github/workflows/deploy-component.yml
     secrets: inherit
