@@ -7,7 +7,7 @@ jobs:
   init-update:
     runs-on: ubuntu-latest
     env:
-      SPRING_BOOT_ADMIN_USER: ${{ secrets.SPRING_BOOT_ADMIN_USER }}
+      SPRING_BOOT_ADMIN_USER: ${{ secrets.SPRING_BOOT_ADMIN_USERNAME }}
       SPRING_BOOT_ADMIN_PASSWORD: ${{ secrets.SPRING_BOOT_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
