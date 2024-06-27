@@ -28,18 +28,32 @@ docker build -t "${versioned_image_wd_name}" --build-arg KGQAN_KNOWLEDGEGRAPH=wi
 docker tag "${versioned_image_wd_name}" "${latest_image_wd_name}"
 
 # push all images
-echo "Pushing ${versioned_image_dp_name} and ${latest_image_dp_name}"
+failure=false
+{
+  # try pushing to docker 
+  echo "Pushing ${versioned_image_dp_name} and ${latest_image_dp_name}" &&
+  docker push "${versioned_image_dp_name}" &&
+  docker push "${latest_image_dp_name}" &&
 
-docker push "${versioned_image_dp_name}"
-docker push "${latest_image_dp_name}"
+  echo "Pushing ${versioned_image_wd_name} and ${latest_image_wd_name}" &&
+  docker push "${versioned_image_wd_name}" &&
+  docker push "${latest_image_wd_name}" 
+} || {
+  # catch failure
+  failure=true
+}
 
-echo "Pushing ${versioned_image_wd_name} and ${latest_image_wd_name}"
-docker push "${versioned_image_wd_name}"
-docker push "${latest_image_wd_name}"
+echo "Removing images" 
+docker rmi -f "${versioned_image_dp_name}" 
+docker rmi -f "${latest_image_dp_name}" 
+docker rmi -f "${versioned_image_wd_name}" 
+docker rmi -f "${latest_image_wd_name}" 
+echo "Done" 
 
-echo "Removing images"
-docker rmi -f "${versioned_image_dp_name}"
-docker rmi -f "${latest_image_dp_name}"
-docker rmi -f "${versioned_image_wd_name}"
-docker rmi -f "${latest_image_wd_name}"
-echo "Done"
+if $failure; then
+  echo "Docker push not successful"
+  exit 4
+else
+  echo "Docker push successful"
+  exit 0
+fi
