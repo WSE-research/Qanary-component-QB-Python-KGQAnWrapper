@@ -18,5 +18,16 @@ COPY run.py boot.sh start_kgqan_services.sh ./
 RUN chmod +x boot.sh
 RUN chmod +x start_kgqan_services.sh
 
+# to allow preconfigured images
+ARG KGQAN_KNOWLEDGEGRAPH
+ARG KNOWLEDGE_GRAPH_NAMES
+ARG DBPEDIA_URI
+ARG WIKIDATA_URI
+
+ENV KGQAN_KNOWLEDGEGRAPH=$KGQAN_KNOWLEDGEGRAPH
+ENV KNOWLEDGE_GRAPH_NAMES=$KNOWLEDGE_GRAPH_NAMES
+ENV DBPEDIA_URI=$DBPEDIA_URI
+ENV WIKIDATA_URI=$WIKIDATA_URI
+
 ENTRYPOINT ["./start_kgqan_services.sh"]
 CMD ["./boot.sh"]

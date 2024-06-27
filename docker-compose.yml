@@ -1,17 +1,13 @@
-version: '3'
 services: 
   component:
     # for building from source
-    image: qanary-component-qb-python-kgqan:latest
+    image: qanary-component-qb-python-kgqanwrapper:latest
     build: 
       context: .
       dockerfile: Dockerfile
-    hostname: qanary.component.qb.kgqan
     ports: 
       - '8082:8082'
     env_file:
       - .env
-    # ENV for kgqan services
     volumes:
-      - ~/.cache/huggingface:/root/.cache/huggingface/
       - ./KGQAn/data:/KGQAn/data
