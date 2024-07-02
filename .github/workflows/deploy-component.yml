@@ -58,7 +58,7 @@ jobs:
             echo "Stopping and deleting old container"
             docker stop "$WD_DOCKER_CONTAINER_NAME" || true && docker rm "$WD_DOCKER_CONTAINER_NAME" || true
             echo "Pulling image: $WD_DOCKER_IMAGE_NAME"
-            docker pull $DP_DOCKER_IMAGE_NAME:latest
+            docker pull $WD_DOCKER_IMAGE_NAME:latest
             echo "Starting container: $WD_DOCKER_CONTAINER_NAME"
             docker run --restart=unless-stopped -d -p "$WD_DOCKER_CONTAINER_PORT":"$WD_DOCKER_CONTAINER_PORT" --env-file "./env_files/$WD_DOCKER_ENV_FILE" --name "$WD_DOCKER_CONTAINER_NAME" "$WD_DOCKER_IMAGE_NAME:latest"
       - name: "Deploy on SWE"
