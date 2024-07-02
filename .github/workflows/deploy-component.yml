@@ -25,9 +25,8 @@ jobs:
       - name: Prepare deployment
         id: setup
         run: bash -c ./service_config/prepare_deployment.sh 
-      - name: "Deploy on DINO"
+      - name: "Deploy on DINO via ssh"
         if: ${{ env.TARGET == 'DINO' }} && steps.setup.outcome == 'success'
-      - name: copy file via scp
         id: copy
         uses: appleboy/scp-action@v0.1.7
         with:
