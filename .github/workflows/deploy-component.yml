@@ -7,13 +7,63 @@ jobs:
   init-update:
     runs-on: ubuntu-latest
     env:
+      TARGET: DINO
       SPRING_BOOT_ADMIN_USERNAME: ${{ secrets.SPRING_BOOT_ADMIN_USERNAME }}
       SPRING_BOOT_ADMIN_PASSWORD: ${{ secrets.SPRING_BOOT_ADMIN_PASSWORD }}
+      # DBpedia
+      DP_DOCKER_IMAGE_NAME: qanary/qanary-component-qb-python-kgqanwrapper-dbpedia
+      DP_DOCKER_CONTAINER_NAME: qanary-qanary-component-qb-python-kgqanwrapper-dbpedia
+      DP_DOCKER_CONTAINER_PORT: 40175
+      DP_DOCKER_ENV_FILE: qb-kgqanwrapper-dbpedia
+      # Wikidata
+      WD_DOCKER_: qanary/qanary-component-qb-python-kgqanwrapper-wikidata
+      WD_DOCKER_CONTAINER_NAME: qanary-qanary-component-qb-python-kgqanwrapper-wikidata
+      WD_DOCKER_CONTAINER_PORT: 40178
+      WD_DOCKER_ENV_FILE: qb-kgqanwrapper-wikidata
     steps:
       - uses: actions/checkout@v4
       - name: Prepare deployment
-        run: bash -c ./service_config/prepare_deployment.sh
-      - name: Init update
+        id: setup
+        run: bash -c ./service_config/prepare_deployment.sh 
+      - name: "Deploy on DINO"
+        if: ${{ env.TARGET == 'DINO' }} && steps.setup.outcome == 'success'
+      - name: copy file via scp
+        id: copy
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets. SERVER_HOST }}
+          port : ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "service_config/files/*"
+          strip_components: 2
+          target: env_files
+      - name: start service via ssh
+        if: steps.copy.outcome == 'success'
+        uses: appleboy/ssh-action@master
+        with: 
+          host: ${{ secrets. SERVER_HOST }}
+          port : ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          envs: DP_DOCKER_IMAGE_NAME,DP_DOCKER_CONTAINER_NAME,DP_DOCKER_CONTAINER_PORT,DP_DOCKER_ENV_FILE,WD_DOCKER_IMAGE_NAME,WD_DOCKER_CONTAINER_NAME,WD_DOCKER_CONTAINER_PORT,WD_DOCKER_ENV_FILE
+          script: |
+            # DBpedia
+            echo "Stopping and deleting old container"
+            docker stop "$DP_DOCKER_CONTAINER_NAME" || true && docker rm "$DP_DOCKER_CONTAINER_NAME" || true
+            echo "Pulling image: $DP_DOCKER_IMAGE_NAME"
+            docker pull $DP_DOCKER_IMAGE_NAME:latest
+            echo "Starting container: $DP_DOCKER_CONTAINER_NAME"
+            docker run --restart=unless-stopped -d -p "$DP_DOCKER_CONTAINER_PORT":"$DP_DOCKER_CONTAINER_PORT" --env-file "./env_files/$DP_DOCKER_ENV_FILE" --name "$DP_DOCKER_CONTAINER_NAME" "$DP_DOCKER_IMAGE_NAME:latest"
+            # Wikidata
+            echo "Stopping and deleting old container"
+            docker stop "$WD_DOCKER_CONTAINER_NAME" || true && docker rm "$WD_DOCKER_CONTAINER_NAME" || true
+            echo "Pulling image: $WD_DOCKER_IMAGE_NAME"
+            docker pull $DP_DOCKER_IMAGE_NAME:latest
+            echo "Starting container: $WD_DOCKER_CONTAINER_NAME"
+            docker run --restart=unless-stopped -d -p "$WD_DOCKER_CONTAINER_PORT":"$WD_DOCKER_CONTAINER_PORT" --env-file "./env_files/$WD_DOCKER_ENV_FILE" --name "$WD_DOCKER_CONTAINER_NAME" "$WD_DOCKER_IMAGE_NAME:latest"
+      - name: "Deploy on SWE"
+        if: ${{ env.TARGET == 'SWE' }} && steps.setup.outcome == 'success'
         uses: WSE-research/docker-service-updater@v0.2.1
         with:
           api_key: ${{ secrets.API_KEY }}

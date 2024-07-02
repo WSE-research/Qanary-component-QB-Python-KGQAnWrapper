@@ -66,18 +66,16 @@ mkdir -p "$kgqan_model_path"
 cp -r /KGQAn/data/output_pred21_8_30/* "$kgqan_model_path"
 echo "Copy commands finished"
 
-# start word_embedding_server
-cd KGQAn/
-python word_embedding/server.py &
-
-# start kgqan_server
-echo "Waiting 300 sec for word_embedding_server to load model"
-sleep 300 && echo "Done waiting"
-
-cd src
-./run.sh server &
-
-cd ../../
+## TODO: re-enable when resource problem solved
+## start word_embedding_server
+#cd KGQAn/
+#python word_embedding/server.py &
+#
+## start kgqan_server
+#cd src
+#./run.sh server &
+#
+#cd ../../
 
 # continue with CMD from Dockerfile
 $@
