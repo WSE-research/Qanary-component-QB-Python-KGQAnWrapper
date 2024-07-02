@@ -16,7 +16,7 @@ jobs:
       DP_DOCKER_CONTAINER_PORT: 40175
       DP_DOCKER_ENV_FILE: qb-kgqanwrapper-dbpedia
       # Wikidata
-      WD_DOCKER_: qanary/qanary-component-qb-python-kgqanwrapper-wikidata
+      WD_DOCKER_IMAGE_NAME: qanary/qanary-component-qb-python-kgqanwrapper-wikidata
       WD_DOCKER_CONTAINER_NAME: qanary-qanary-component-qb-python-kgqanwrapper-wikidata
       WD_DOCKER_CONTAINER_PORT: 40178
       WD_DOCKER_ENV_FILE: qb-kgqanwrapper-wikidata
