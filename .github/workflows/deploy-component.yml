@@ -47,20 +47,20 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           envs: DP_DOCKER_IMAGE_NAME,DP_DOCKER_CONTAINER_NAME,DP_DOCKER_CONTAINER_PORT,DP_DOCKER_ENV_FILE,WD_DOCKER_IMAGE_NAME,WD_DOCKER_CONTAINER_NAME,WD_DOCKER_CONTAINER_PORT,WD_DOCKER_ENV_FILE
           script: |
-            # DBpedia
-            echo "Stopping and deleting old container"
-            docker stop "$DP_DOCKER_CONTAINER_NAME" || true && docker rm "$DP_DOCKER_CONTAINER_NAME" || true
-            echo "Pulling image: $DP_DOCKER_IMAGE_NAME"
-            docker pull $DP_DOCKER_IMAGE_NAME:latest
-            echo "Starting container: $DP_DOCKER_CONTAINER_NAME"
-            docker run --restart=unless-stopped -d -p "$DP_DOCKER_CONTAINER_PORT":"$DP_DOCKER_CONTAINER_PORT" --env-file "./env_files/$DP_DOCKER_ENV_FILE" --name "$DP_DOCKER_CONTAINER_NAME" "$DP_DOCKER_IMAGE_NAME:latest"
+            #            # DBpedia
+            #            echo "Stopping and deleting old container"
+            #            docker stop "$DP_DOCKER_CONTAINER_NAME" || true && docker rm "$DP_DOCKER_CONTAINER_NAME" || true
+            #            echo "Pulling image: $DP_DOCKER_IMAGE_NAME"
+            #            docker pull $DP_DOCKER_IMAGE_NAME:latest
+            #            echo "Starting container: $DP_DOCKER_CONTAINER_NAME"
+            #            docker run --restart=unless-stopped --memory="18g" -d -p "$DP_DOCKER_CONTAINER_PORT":"$DP_DOCKER_CONTAINER_PORT" --env-file "./env_files/$DP_DOCKER_ENV_FILE" --name "$DP_DOCKER_CONTAINER_NAME" "$DP_DOCKER_IMAGE_NAME:latest"
             # Wikidata
             echo "Stopping and deleting old container"
             docker stop "$WD_DOCKER_CONTAINER_NAME" || true && docker rm "$WD_DOCKER_CONTAINER_NAME" || true
             echo "Pulling image: $WD_DOCKER_IMAGE_NAME"
             docker pull $WD_DOCKER_IMAGE_NAME:latest
             echo "Starting container: $WD_DOCKER_CONTAINER_NAME"
-            docker run --restart=unless-stopped -d -p "$WD_DOCKER_CONTAINER_PORT":"$WD_DOCKER_CONTAINER_PORT" --env-file "./env_files/$WD_DOCKER_ENV_FILE" --name "$WD_DOCKER_CONTAINER_NAME" "$WD_DOCKER_IMAGE_NAME:latest"
+            docker run --restart=unless-stopped --memory="20g" -d -p "$WD_DOCKER_CONTAINER_PORT":"$WD_DOCKER_CONTAINER_PORT" --env-file "./env_files/$WD_DOCKER_ENV_FILE" --name "$WD_DOCKER_CONTAINER_NAME" "$WD_DOCKER_IMAGE_NAME:latest"
       - name: "Deploy on SWE"
         if: ${{ env.TARGET == 'SWE' }} && steps.setup.outcome == 'success'
         uses: WSE-research/docker-service-updater@v0.2.1

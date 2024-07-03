@@ -1,4 +1,5 @@
 #!/bin/bash
+export $(grep -v "^#" < .env)
 
 # check required parameters
 declare -a required_vars=(
