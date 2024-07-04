@@ -6,7 +6,7 @@ from qanary_helpers.registrator import Registrator
 
 from component import app, healthendpoint, aboutendpoint
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.ERROR)
 # TODO: get logger from module
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

@@ -1,6 +1,7 @@
 services: 
   component:
     # for building from source
+    mem_limit: 20gb
     image: qanary-component-qb-python-kgqanwrapper:latest
     build: 
       context: .

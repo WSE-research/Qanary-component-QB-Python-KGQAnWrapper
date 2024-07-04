@@ -66,16 +66,15 @@ mkdir -p "$kgqan_model_path"
 cp -r /KGQAn/data/output_pred21_8_30/* "$kgqan_model_path"
 echo "Copy commands finished"
 
-## TODO: re-enable when resource problem solved
-## start word_embedding_server
-#cd KGQAn/
-#python word_embedding/server.py &
-#
-## start kgqan_server
-#cd src
-#./run.sh server &
-#
-#cd ../../
+# start word_embedding_server
+cd KGQAn/
+python word_embedding/server.py &
+
+# start kgqan_server
+cd src
+./run.sh server &
+
+cd ../../
 
 # continue with CMD from Dockerfile
 $@
