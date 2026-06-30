@@ -21,14 +21,14 @@ jobs:
       WD_DOCKER_CONTAINER_PORT: 40178
       WD_DOCKER_ENV_FILE: qb-kgqanwrapper-wikidata
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare deployment
         id: setup
         run: bash -c ./service_config/prepare_deployment.sh 
       - name: "Deploy on DINO via ssh"
         if: ${{ env.TARGET == 'DINO' }} && steps.setup.outcome == 'success'
         id: copy
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets. SERVER_HOST }}
           port : ${{ secrets.SERVER_PORT }}
