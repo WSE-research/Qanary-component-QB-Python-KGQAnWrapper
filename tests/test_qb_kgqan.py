@@ -1,11 +1,13 @@
-from component.qb_kgqan import *
-from component import app
-from unittest.mock import patch
+import json
+import logging
 import re
 from unittest import TestCase
+from unittest.mock import patch
+
 import pkg_resources
-import json
 from fastapi.testclient import TestClient
+
+from component import app
 
 
 class TestComponent(TestCase):
@@ -63,8 +65,10 @@ class TestComponent(TestCase):
 
             # clean query strings
             query_sparql = re.sub(r"(\\n\W*|\n\W*)", " ", call_args_sparql[0][1])
+            # the cleaned SPARQL still annotates the answer
+            assert "AnnotationOfAnswerSPARQL" in query_sparql
 
-            # then the triplestore is updated twice 
+            # then the triplestore is updated twice
             # (question language and translation)
             assert mocked_insert_into_triplestore.call_count == 2
 
@@ -77,4 +81,4 @@ class TestComponent(TestCase):
 #            assert "@"+self.target_language in query_translation.lower()
 
             # then the response is not empty
-            assert response_json != None
+            assert response_json is not None
