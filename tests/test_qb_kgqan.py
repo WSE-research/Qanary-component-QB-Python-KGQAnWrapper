@@ -1,10 +1,10 @@
 import json
 import logging
 import re
+from importlib.resources import files
 from unittest import TestCase
 from unittest.mock import patch
 
-import pkg_resources
 from fastapi.testclient import TestClient
 
 from component import app
@@ -45,7 +45,7 @@ class TestComponent(TestCase):
             # given a non-english question is present in the current graph
             mocked_get_text_question_in_graph.return_value = self.questions
             mocked_insert_into_triplestore.return_value = None
-            with open(pkg_resources.resource_filename('tests.resources', 'response.json'), 'r') as response:
+            with (files('tests.resources') / 'response.json').open('r') as response:
                 mocked_call_kgqan_endpoint.return_value = json.load(response)
 
             # when a call to /annotatequestion is made
