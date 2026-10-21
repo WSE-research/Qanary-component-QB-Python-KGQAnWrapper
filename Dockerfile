@@ -1,4 +1,6 @@
-FROM python:3.14
+# KGQAn needs allennlp 2.10 (torch < 1.13: no wheels after Python 3.10) and tensorflow 2.16
+# (Python <= 3.12); the image stays on 3.10, see the ignore rule in .github/dependabot.yml
+FROM python:3.10
 
 COPY requirements.txt ./
 
